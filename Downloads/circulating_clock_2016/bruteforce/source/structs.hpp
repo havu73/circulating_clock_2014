@@ -28,7 +28,7 @@ structs.hpp contains every struct used in the program.
 #include <fstream> // Needed for ofstream
 
 
-
+#include "macros.hpp"
 #include "memory.hpp"
 
 using namespace std;
@@ -159,7 +159,8 @@ struct input_params {
 	
 	// Input and output files' paths and names (either absolute or relative
 	char* sim_file; // The relative filename of the simulation executable
-
+	
+	char* good_sets_file;
 	bool print_good_sets;
 	int num_sets;
 	// Simulation parameters
@@ -174,9 +175,9 @@ struct input_params {
 	int seed; // The seed used in the evolutionary strategy, default=current UNIX time
 	
 	input_params () {
-		this->sim_file = copy_str("../simulation/simulation");
+		this->sim_file = copy_str("../sim_bf/simulation");
 		this->seed = time(0);
-		this->print_good_sets = false;
+		this->print_good_sets = true;
 		this->sim_args = NULL;
 		this->num_sim_args = 0;
 		this->verbose = false;
@@ -184,10 +185,14 @@ struct input_params {
 		this->cout_orig = NULL;
 		this->null_stream = new ofstream("/dev/null");
 		this->num_sets = 10000;
+		this->good_sets_file = NULL;
 	}
 	
 	~input_params () {
 		mfree(this->sim_file);
+		if (this->good_sets_file != NULL){
+			mfree(this->good_sets_file);
+		}
 		if (this->sim_args != NULL) {
 			for (int i = 0; i < this->num_sim_args; i++) {
 				mfree(this->sim_args[i]);
@@ -198,6 +203,30 @@ struct input_params {
 	}
 };
 
+struct parameters {
+	//rates bases and rates for mutants
+	double** data;  // Base rates taken from the current parameter set
+	int num_sets; 
+	explicit parameters (int num_sets) {
+		this->num_sets = num_sets;
+		this->data = new double* [num_sets];
+		for (int i = 0; i < num_sets; i ++){
+			this->data[i] = new double[DIM];
+			memset(this->data[i], 0, sizeof(double) * DIM);
+		}
+	}
+	
+	void clear (){
+		for (int i = 0; i < this->num_sets; i++) {
+				delete[] this->data[i];
+		}
+		delete[] this->data;
+	}
+	
+	~parameters () {
+		this->clear();
+	}
+};
 
 
 

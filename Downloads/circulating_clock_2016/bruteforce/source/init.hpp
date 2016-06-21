@@ -36,6 +36,7 @@ void init_sim_args(input_params&);
 char** copy_args(char**, int);
 void store_pipe(char**, int, int);
 void reset_cout(input_params&);
-void generate_parameters(double***);
+void generate_parameters(parameters&);
+double random_parameters(int, int);
 #endif
 

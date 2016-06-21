@@ -24,10 +24,11 @@ macros.hpp contains every constant and macro function used in the program.
 #define MACROS_HPP
 
 // The number of implicit arguments sent to the simulation
-#define NUM_IMPLICIT_SIM_ARGS 6
+#define NUM_IMPLICIT_SIM_ARGS 8
 
 // Number of random numbers to generate per parameter sets
 #define DIM 					14
+
 
 // Exit statuses
 #define EXIT_SUCCESS			0

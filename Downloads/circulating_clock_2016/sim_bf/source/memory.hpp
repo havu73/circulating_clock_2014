@@ -1,5 +1,5 @@
 /*
-Stochastically ranked evolutionary strategy sampler for zebrafish segmentation
+Simulation for zebrafish segmentation
 Copyright (C) 2013 Ahmet Ay, Jack Holland, Adriana Sperlea, Sebastian Sangervasi
 
 This program is free software: you can redistribute it and/or modify
@@ -17,23 +17,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
-io.hpp contains function declarations for io.cpp.
+memory.hpp contains function declarations for memory.cpp.
 */
 
-#ifndef IO_HPP
-#define IO_HPP
+#ifndef MEMORY_HPP
+#define MEMORY_HPP
 
-#include "structs.hpp"
+#include <cstdlib> // Needed for size_t
 
-void store_filename(char**, const char*);
-void simulate_set(parameters&);
-//void print_good_set (double parameters[], double score, input_params&);
-void write_pipe (int fd, parameters& pr);
-void write_pipe_int(int, int);
-void read_pipe(int, double**);
-void read_pipe_int(int, double*);
-void close_if_open(ofstream&);
-void open_file (ofstream*, char* , bool);
-void print_good_set (parameters& , double**);
+using namespace std;
+
+void* mallocate(size_t);
+void mfree(void*);
+#if defined(MEMTRACK)
+	void print_heap_usage();
+#endif
+
 #endif
 

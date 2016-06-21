@@ -45,35 +45,6 @@ void store_filename (char** field, const char* value) {
 }
 
 
-
-
-/* open_file opens the file with the given name and stores it in the given output file stream
-	parameters:
-		file_pointer: a pointer to the output file stream to open the file with
-		file_name: the path and name of the file to open
-		append: if true, the file will appended to, otherwise any existing data will be overwritten
-	returns: nothing
-	notes:
-	todo:
-		TODO: check if this function is still being used
-*/
-void open_file (ofstream* file_pointer, char* file_name, bool append) {
-	ostream& v = term->verbose();
-	try {
-		if (append) {
-			v << term->blue << "Opening " << term->reset << file_name << " . . . ";
-			file_pointer->open(file_name, fstream::app);
-		} else {
-			v << term->blue << "Creating " << term->reset << file_name << " . . . ";
-			file_pointer->open(file_name, fstream::out);
-		}
-	} catch (ofstream::failure) {
-		cout << term->red << "Couldn't write to " << file_name << "!" << term->reset << endl;
-		exit(EXIT_FILE_WRITE_ERROR);
-	}
-	term->done(v);
-}
-
 /* simulate_set performs the required piping to setup and run a simulation with the given parameters
 	parameters:
 		parameters: the parameters to pass as a parameter set to the simulation
@@ -81,13 +52,12 @@ void open_file (ofstream* file_pointer, char* file_name, bool append) {
 	notes:
 	todo:
 */
-double simulate_set (double parameters[]) {
+void simulate_set (parameters& pr) {
 	ostream& v = term->verbose();
 
 	// Create a pipe
 	int sim_in[2];
 	int sim_out[2]; 
-	
 	v << "  ";
 	v << term->blue << "Creating a pipe " << term->reset << ". . . ";
 	if (pipe(sim_in) == -1 || pipe(sim_out) == -1) {
@@ -100,6 +70,7 @@ double simulate_set (double parameters[]) {
 	int parent_write = sim_in[1];
 	int child_write = sim_out[1];
 	int child_read = sim_in[0];
+	
 	// Copy the user-specified simulation arguments and fill the copy with the pipe's file descriptors
 	char** sim_args = copy_args(ip.sim_args, ip.num_sim_args);
 	store_pipe(sim_args, ip.num_sim_args - 4, child_read);
@@ -125,11 +96,12 @@ double simulate_set (double parameters[]) {
 			term->failed_exec();
 			exit(EXIT_EXEC_ERROR);
 		}
-	} else { // The parent pipes in the parameter set to run
+	}
+	else { // The parent pipes in the parameter set to run
 		v << term->blue << "Done: " << term->reset << "the child process's PID is " << pid << endl;
 		v << "  ";
 		v << term->blue << "Writing to the pipe " << term->reset << "(file descriptor " << parent_write << ") . . . ";
-		write_pipe(parent_write, parameters);
+		write_pipe(parent_write, pr);
 		term->done(v);
 	}
 	
@@ -143,21 +115,12 @@ double simulate_set (double parameters[]) {
 	
 	
 	// Pipe in the simulation's score
-	//double max_score;
-	double score;
+	double* score;
 	v << "  ";
 	v << term->blue << "Reading the pipe " << term->reset << "(file descriptor " << parent_read << ") . . . ";
 	read_pipe(parent_read, &score);
 	v << term->blue << "Done: " << term->reset << "(raw score " << score << " / " << 1 << ")" << endl;
-	double SRESscore;
-	
-	if (score >= 1){
-		SRESscore = 0;
-	}else {
-		SRESscore = 1 - score;
-	}
-    
-	//print_good_set(parameters, SRESscore);
+
 	// CLOSE PIPES
 	v << "  ";
 	v << term->blue << "Closing the the pipes " << term->reset << "(file descriptor " << parent_read << ", "<< parent_write << ", " << child_read << ", " << child_write<< ") . . . ";
@@ -182,32 +145,28 @@ double simulate_set (double parameters[]) {
 	}
 	term->done(v);
 	
+	print_good_set(pr, &score);
 	// Free the simulation arguments
 	for (int i = 0; sim_args[i] != NULL; i++) {
 		mfree(sim_args[i]);
 	}
 	mfree(sim_args);
-	
-	
-	// libSRES requires scores from 0 to 1 with 0 being a perfect score so convert the simulation's score format into libSRES's
-	return SRESscore;
 }
 
-/*
-void print_good_set (double parameters[], double score) {
-    if (ip.print_good_sets && score <= ip.good_set_threshold) {
-        cout << term->blue << "  Found a good set " << term->reset << "(score " << score << ")" << endl;
-        ip.good_sets_stream << score << "," << parameters[0];
-        cout << score << "," << parameters[0];
-        for (int i = 1; i < DIM; i++) {
-            ip.good_sets_stream << "," << parameters[i];
-            cout << "," << parameters[i];
-        }
-        ip.good_sets_stream << endl;
-        cout << endl;
-    }
+void print_good_set (parameters& pr, double** score) {
+	ofstream passed_file ;
+	open_file(&passed_file, ip.good_sets_file, false);
+	for (int i = 0; i < ip.num_sets; i ++){
+		if (*score[i] != 0){
+			for (int j = 0; j < DIM; j ++){
+				passed_file.write((char *)(&(pr.data[i][j])), sizeof(double));
+			}
+			passed_file << "\n";
+		}
+	}
+	close_if_open(passed_file);
 }
-*/
+
 
 /* write_pipe writes the given parameter set to the given pipe
 	parameters:
@@ -217,14 +176,14 @@ void print_good_set (double parameters[], double score) {
 	notes:
 	todo:
 */
-void write_pipe (int fd, double parameters[]) {
+void write_pipe (int fd, parameters& pr) {
 	write_pipe_int(fd, DIM); // Write the number of dimensions, i.e. parameters per set, being sent
-	write_pipe_int(fd, 1); // Write that one parameter set is being sent
-	if (write(fd, parameters, sizeof(double) * DIM) == -1) {
-		term->failed_pipe_write();
-		exit(EXIT_PIPE_WRITE_ERROR);
+	for (int i = 0; i < ip.num_sets; i ++){
+		if (write(fd, pr.data[i], sizeof(double) * DIM) == -1) {
+			term->failed_pipe_write();
+			exit(EXIT_PIPE_WRITE_ERROR);
+		}
 	}
-	
 }
 
 /* write_pipe_int writes the given integer to the given pipe
@@ -251,8 +210,10 @@ void write_pipe_int (int fd, int value) {
 	notes:
 	todo:
 */
-void read_pipe (int fd, double* score) {
-	read_pipe_int(fd, score);
+void read_pipe (int fd, double** score) {
+	for (int i = 0; i < ip.num_sets; i ++){
+		read_pipe_int(fd, score[i]);
+	}
 }
 
 /* read_pipe_int writes an integer from the given pipe
@@ -284,3 +245,27 @@ void close_if_open (ofstream& file) {
 	}
 }
 
+/* open_file opens the file with the given name and stores it in the given output file stream
+	parameters:
+		file_pointer: a pointer to the output file stream to open the file with
+		file_name: the path and name of the file to open
+		append: if true, the file will appended to, otherwise any existing data will be overwritten
+	returns: nothing
+	notes:
+	todo:
+*/
+void open_file (ofstream* file_pointer, char* file_name, bool append) {
+	try {
+		if (append) {
+			cout << term->blue << "Opening " << term->reset << file_name << " . . . ";
+			file_pointer->open(file_name, fstream::app);
+		} else {
+			cout << term->blue << "Creating " << term->reset << file_name << " . . . ";
+			file_pointer->open(file_name, fstream::out);
+		}
+	} catch (ofstream::failure) {
+		cout << term->red << "Couldn't write to " << file_name << "!" << term->reset << endl;
+		exit(EXIT_FILE_WRITE_ERROR);
+	}
+	term->done();
+}

@@ -1,0 +1,280 @@
+#ifndef MACROS_HPP
+#define MACROS_HPP
+
+#include <math.h>
+#define MNPO			10	//Per1mRNA in nu
+#define MCPO			11	//Per1mRNA in cy
+#define	MNPT			12	//Per2mRNA in nu
+#define MCPT			13	//Per2mRNA in cy
+#define	MNRO			18	//cry1mRNA in nu
+#define MCRO			19	//cry1mRNA in cy
+#define MNRT			14	//cry2mRNA in nu
+#define MCRT			15	//cry2mRNA in cy
+#define MNB			20	//Bmals mRNA in nu
+#define	MCB			21	//Bmals mRNA in cy
+#define MNNP			22	//Npas2 mRNA in nu
+#define MCNP			23	//Npas2 mRNA in cy
+#define MNREV		16	//Rev-erbs mRNA in nu
+#define MCREV		17	//Rev-erbs mRNA in cy
+#define B			24 	//Bmals protein in cy
+#define CL 			25	//Clock/NPAS2 protein in cy
+#define	BC			26	//unphosphorylated Bmals-Clock/NPAS2 
+#define REVN			28	//unphosphorylated rev-erbs in nu
+#define CYREV		27	//unphosphorylated rev-erbs in cy
+#define	REVNG		30	//unphosphorylated rev-erbs bound with GSK3beta in nu
+#define CYREVG		29	//unphosphorylated rev-erbs bound with GSK3beta in cy
+#define REVNGP		32	//phosphorylated rev-erbs bound with GSK3beta in nu
+#define	CYREVGP		31	//phosphorylated rev-erbs bound with GSK3beta in cy
+#define REVNP		34	//phosphorylated rev-erbs in nu
+#define CYREVP		33	//phosphorylated rev-erbs in cy
+#define	G			1	//prob of per1, per2 and cry1 E-box being activated
+#define GRB			0	//prob of per1, per2 and cry1 E-box being represssed (In literature: GR (R big))
+#define GC			5	//prob of cry2 E-box activated
+#define GCR			4	//prob of cry2 E-box Repressed
+#define GRS			3	//prob of rev-erbs E-box activated (In literature: Gr (r small))
+#define GRSRB		2 	//prob of rev-erbs E-box repressed (In literature: GrR)
+#define	GB			7	//prob of npas2 and cry1 RORE activated
+#define	GBR			6	//prob of npas2 and cry1 RORE repressed
+#define GBB			9	//prob of Bmals RORE activated
+#define GBRB			8	//prob of Bmals RORE repressed
+#define GTO			35	//activity of GSK3beta
+#define X00001		37	//no per, no cry, no kinases, phosphorylated Bmals--- phosphorylated CLK in cy
+#define	X00011		38	//no per no cry no kinases p Bmals--pCLK in nu
+#define	X00100		39	//no per no cry CKI no pBmal-pCLK in cy
+#define	X00110		40
+#define	X00200		41
+#define	X00210		42
+#define	X01000		43
+#define	X01010		44
+#define	X01011		45
+#define X02000		46
+#define	X02010		47
+#define	X02011		48
+#define	X10000		49
+#define	X10100		50	
+#define	X20000		51
+#define	X20010		52
+#define	X20011		53
+#define	X20100		54	
+#define	X20110		55	
+#define	X20111		56
+#define	X21000		57
+#define	X21010		58
+#define	X21011		59
+#define	X21100		60
+#define	X21110		61
+#define	X21111		62
+#define	X22000		63
+#define	X22010		64
+#define	X22011		65
+#define X22100		66
+#define X22110		67
+#define	X22111		68
+#define	X30000		69
+#define	X30100		70
+#define	X30200		71	
+#define	X30300		72
+#define	X40000		73
+#define	X40010		74
+#define	X40011		75	
+#define	X40100		76
+#define	X40110		77
+#define	X40111		78
+#define	X40200		79
+#define	X40210		80	
+#define	X40211		81
+#define	X40300		82
+#define	X40310		83
+#define	X40311		84
+#define	X41000		85
+#define	X41010		86
+#define	X41011		87
+#define	X41100		88
+#define	X41110		89
+#define	X41111		90
+#define	X41200		91	
+#define	X41210		92
+#define	X41211		93
+#define	X41300		94
+#define	X41310		95
+#define	X41311		96
+#define	X42000		97
+#define	X42010		98
+#define	X42011		99
+#define	X42100		100
+#define	X42110		101
+#define	X42111		102
+#define	X42200		103
+#define	X42210		104
+#define	X42211		105
+#define	X42300		106
+#define	X42310		107
+#define	X42311		108
+#define	X50000		109
+#define	X50010		110
+#define	X50011		111
+#define	X50100		112
+#define	X50110		113
+#define	X50111		114
+#define	X50200		115
+#define	X50210		116
+#define	X50211		117
+#define	X50300		118
+#define	X50310		119
+#define	X50311		120
+#define	X51000		121
+#define	X51010		122
+#define	X51011		123
+#define	X51100		124
+#define	X51110		125
+#define	X51111		126
+#define	X51200		127
+#define	X51210		128
+#define	X51211		129
+#define	X51300		130
+#define	X51310		131
+#define	X51311		132
+#define	X52000		133
+#define	X52010		134
+#define	X52011		135
+#define	X52100		136
+#define	X52110		137
+#define	X52111		138
+#define	X52200		139
+#define	X52210		140
+#define	X52211		141
+#define	X52300		142
+#define	X52310		143
+#define	X52311		144
+#define	X60000		145
+#define	X60010		146
+#define	X60011		147
+#define	X60100		148
+#define	X60110		149
+#define	X60111		150
+#define	X60200		151
+#define	X60210		152
+#define	X60211		153
+#define	X60300		154
+#define	X60310		155
+#define	X60311		156
+#define	X61000		157
+#define	X61010		158
+#define	X61011		159
+#define	X61100		160
+#define	X61110		161
+#define	X61111		162
+#define	X61200		163
+#define	X61210		164
+#define	X61211		165
+#define	X61300		166
+#define	X61310		167
+#define	X61311		168
+#define	X62000		169
+#define	X62010		170
+#define	X62011		171
+#define	X62100		172
+#define	X62110		173
+#define	X62111		174
+#define	X62200		175
+#define	X62210		176
+#define	X62211		177
+#define	X62300		178
+#define	X62310		179
+#define	X62311		180
+
+#define NUM_CONS		180	//total number of things (mRNA, protein, complexes) in the system
+
+#define NUM_FEATURE_CONS	181
+		
+#define	TRPO			0	//transcription rate fro Per1
+#define	TRPT			1	//Transcription rate for Per2
+#define	TRRO			2	//Transcription rate for Cry1
+#define	TRRT			3	//Transcription rate for Cry2
+#define	TRB			4	//Transcription rate for Bmal
+#define	TRREV		5	//Transcription rate for Rev-erbs
+#define TRNP			6	//Transcription rate for Npas2
+#define	TLP			7	//Translation rate for Per1 and Per2
+#define	TLR			8	//Translation rate for Cry1 and Cry2
+#define	TLB			9	//Translation rate for Bmal
+#define	TLREV		10	//Translation rate for Rev-erbs
+#define	TLC			11	//Translation rate for Clock
+#define	TLNP			12	//Translation rate for NPAS2	
+#define	AGP			13	//Binding rate for Per2-GSK3Beta
+#define	DG			14	//Binding rate for Per2/Rev-erbs to GSK3Beta
+#define	AC			15	//Binding rate for Per1/2-CKIepsilon/delta
+#define	DC			16	//Unbinding rate for Per1/2-CKIepsilon/delta
+#define	AR			17	//Binding rate for Per1/2-Cry1/2
+#define	DR			18	//Unbinding rate for Per1/2-Cry1/2
+#define	CBIN			19	//Binding rate for Bmal to clock/Npas2
+#define	UNCBIN		20	//unbinidng rate for Bmal to Clock/Npas2
+#define	BBIN			21	//Binding rate Per1/2to Bmal-Clock/Npas2
+#define	UNBBIN		22	//Unbinding rate for  Per1/2to Bmal-Clock/Npas2
+#define	CBBIN		23	//Binding rate for Cry1/2 to Bmal-Clock/Npas2
+#define	UNCBBIN		24	//Unbinding rate for Cry1/2 to Bmal-Clock/Npas2
+#define	AG			25	//Binding rate for Rev-erbs to GSK3Beta
+#define	BIN			26	//Normalized binding rate for Bmal-Clock/Npas2 to Per1/2/Cry1 Ebox
+#define	UNBIN		27	//Normalized unbinding rate for Bmal-Clock/Npas2 to Per1/2/Cry1 Ebox
+#define	BINREV		28	//Normalized binding rate Rev-erbs to Cry1/Npas2 RORE
+#define	UNBINREV 	29	//Normalized unbinding rate ------
+#define	BINR			30	//Normalized binding rate Bmal-Clock/Npas2 to Rev-erbs Ebox
+#define	UNBINR		31	//Normalized Unbinding rate Bmal-Clock/Npas2 to Rev-erbs Ebox
+#define	BINC			32	//Normalized binding rate for Bmal-Clock/Npas2 to Cry2 ebox
+#define	UNBINC		33	//Normalized unbinding rate for Bmal-Clock/Npas2 to Cry2 ebox
+#define	BINREVB		34	//Normalized binding rate Rev-erbs to Bmal RORE
+#define	UNBINREVB	35	//Normalized unbinding rate Rev-erbs to Bmal RORE
+#define	TMC			36	//Rate for folding and nuclear export of Per1/2, Cry1/2, Bnak, Npas2 and mRNA
+#define	TMCREV		37	//Folding and nu export of Rev-erbs mRNA	
+#define	NL			38	//Nuclear localization rate for proteins bound to Per
+#define	NE			39	//nucleat export rate for Protein boudn to Per
+#define	NLREV		40	//Nuclear localization rate Rev-erbs and GSK3beta if bound
+#define	NEREV		41	//Nu export rate Rev-erbs as well as GSK3beat if bound
+#define	LNE			42	//nu export rate for unbound kinases GSK3beta and CKI
+#define	NLBC			43	//Nu localization rate Bmal-clock/Npas2
+#define	HOO			44	//CKE epsilon/delta phosphorylation rate Per1
+#define	HTO			45	//---------------------------------------Per2
+#define	PHOS			46	//Phos--- rate Bmal-Clock/Npas2
+#define	LONO			47	//Additional Per1 transcription rate in light
+#define	LONT			48	//-----------Per2----------------------------
+#define	LTA			49	//Rate of activation of pho	
+#define	LTB			50	//Light effect decreate rate
+#define	TRGTO		51	//increate rate GSK3beta activity
+#define	UGTO			52	//decrease-----------------------
+#define	NF			53	//ratio of cy and nu compartment volume
+#define	UP			54	//-----------------CKI phosphorylated Per
+#define	URO			55	//-----------------CRY1
+#define	URT			56	//-----------------CRY2
+#define	UMNP			57	//-----------------Npas2
+#define	UMPO			58	//Degradation rate Per1
+#define	UMPT			59	//-----------------Per2
+#define	UMRO			60	//-----------------Cry1
+#define	UMRT			61	//-----------------Cry2
+#define	UB			62	//-----------------BMAL
+#define	UC			63	//-----------------CLOCK/NPAS2
+#define	UBC			64	//-----------------BMAL-CLOCK/NPAS2
+#define	UPU			65	//-----------------unphosphorylated Per
+#define	UREV			66	//-----------------unphosphorylated REV_ERBS
+#define	UPREV		67	//-----------------GSK3beta phosphorylated REV_ERBS
+#define	UMB			68	//-----------------Bmal
+#define	UMREV		69	//-----------------Rev-erbs
+
+
+
+
+#define NUM_RATES	70
+
+#define NUM_MUTANTS	//to be determined
+
+// Macros for commonly used functions small enough to inject directly into the code
+#define INT_STRLEN(x) (log10((x) > 0 ? (x) : 1) + 1)
+
+// Exit statuses
+#define EXIT_SUCCESS			0
+#define EXIT_MEMORY_ERROR		1
+#define EXIT_FILE_READ_ERROR	2
+#define EXIT_FILE_WRITE_ERROR	3
+#define EXIT_PIPE_READ_ERROR	4
+#define EXIT_PIPE_WRITE_ERROR	5
+#define EXIT_INPUT_ERROR		6
+
+#endif

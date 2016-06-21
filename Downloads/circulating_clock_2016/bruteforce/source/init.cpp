@@ -21,6 +21,7 @@ init.cpp contains initialization functions used before any simulations start.
 */
 
 #include <cmath> // Needed for log10
+#include <stdio.h>
 
 #include "init.hpp" // Function declarations
 
@@ -102,8 +103,15 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 				if (ip.seed <= 0) {
 					usage("The seed to generate random numbers must be a positive integer. Set -s or --seed to at least 1.");
 				}
-			} else if (option_set(option, "-o", "--print-good-sets")) {
+			}else if (option_set(option, "-n", "--num_sets")) {
+				ensure_nonempty(option, value);
+				ip.num_sets = atoi(value);
+				if (ip.seed <= 0) {
+					usage("The number of sets to simulate need to be at least 1. ");
+				}
+			}else if (option_set(option, "-o", "--print-good-sets")) {
                 ensure_nonempty(option, value);
+                store_filename(&(ip.good_sets_file), value);
                 ip.print_good_sets = true;
             } else if (option_set(option, "-a", "--arguments")) {
 				ensure_nonempty(option, value);
@@ -214,6 +222,11 @@ void init_sim_args (input_params& ip) {
 	
 	// Initialize the implicit arguments
 	ip.sim_args[0] = copy_str("simulation");
+	ip.sim_args[ip.num_sim_args - 7] = copy_str("--parameter-sets");
+	char buf[20];
+	sprintf(buf, "%d", ip.num_sets);
+	cout << buf<< endl;
+	ip.sim_args[ip.num_sim_args - 6] = copy_str(buf);
 	ip.sim_args[ip.num_sim_args - 5] = copy_str("--pipe-in");
 	ip.sim_args[ip.num_sim_args - 4] = copy_str("0");
 	ip.sim_args[ip.num_sim_args - 3] = copy_str("--pipe-out");
@@ -268,7 +281,15 @@ void reset_cout (input_params& ip) {
 	}
 }
 
-void generate_parameters(double*** parameters){
-	
+void generate_parameters(parameters& pr){
+	for (int i = 0; i < pr.num_sets; i ++){
+		for (int j = 0; j < DIM; j ++){
+			pr.data[i][j] = (double)(rand() % 1000);
+		}
+	}
 }
 
+double random_parameters(int min, int max){
+	double f = (double) rand()/RAND_MAX;
+	return min + f * (max - min);
+}

@@ -3,7 +3,7 @@
 
 #include "init.hpp"
 #include "macros.hpp"
-
+#include "io.hpp"
 using namespace std;
 input_params ip;
 extern terminal* term; // Declared in init.cpp
@@ -24,13 +24,15 @@ int main (int argc, char** argv) {
 	accept_input_params(argc, argv, ip);
 	init_verbosity(ip);
 	init_sim_args(ip);
-	
+	cout << "after init_sim_params" << endl;
 	//Generate random parameter sets
-	double ** parameters;
-	generate_parameters(&parameters);
-	//Call to simulation
+	parameters pr (ip.num_sets);
+	generate_parameters(pr);
+	cout << ip.num_sets<< endl;
 	
-	// Free used memory, wrap up libSRES, etc.
+	//Call to simulation
+	simulate_set(pr);
+	// Free used memory, etc.
 	#if defined(MEMTRACK)
 		print_heap_usage();
 	#endif
@@ -58,6 +60,8 @@ void usage (const char* message) {
 	cout << "Usage: [-option [value]]. . . [--option [value]]. . ." << endl;
 	cout << "-f, --simulation         [filename]   : the relative filename of the simulation executable, default=../simulation/simulation" << endl;
 	cout << "-s, --seed               [int]        : the seed used in the evolutionary strategy (not simulations), min=1, default=time" << endl;
+	cout << "-n, --num_sets           [int]        : the number of parameters sets to generate and run on simulation" << endl;
+	cout << "-o, --print-good-sets    [int]        : the name of a file containing sets of parameters that do not produce negative or NaN" << endl;
 	cout << "-a, --arguments          [N/A]        : every argument following this will be sent to the simulation" << endl;
 	cout << "-c, --no-color           [N/A]        : disable coloring the terminal output, default=unused" << endl;
 	cout << "-v, --verbose            [N/A]        : print detailed messages about the program state" << endl;
