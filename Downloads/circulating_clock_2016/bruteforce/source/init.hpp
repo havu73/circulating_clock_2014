@@ -38,5 +38,6 @@ void store_pipe(char**, int, int);
 void reset_cout(input_params&);
 void generate_parameters(parameters&);
 double random_parameters(int, int);
+void create_good_set_file();
 #endif
 

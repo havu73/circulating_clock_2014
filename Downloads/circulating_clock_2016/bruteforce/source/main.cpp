@@ -24,11 +24,15 @@ int main (int argc, char** argv) {
 	accept_input_params(argc, argv, ip);
 	init_verbosity(ip);
 	init_sim_args(ip);
-	cout << "after init_sim_params" << endl;
+	cout << ip.sim_args[1] << endl;
+	
 	//Generate random parameter sets
 	parameters pr (ip.num_sets);
 	generate_parameters(pr);
-	cout << ip.num_sets<< endl;
+	cout << "in Main: first parameters " << pr.data[0][0] << endl;
+	
+	//Create passed file stream to write
+	create_good_set_file();
 	
 	//Call to simulation
 	simulate_set(pr);
@@ -36,6 +40,7 @@ int main (int argc, char** argv) {
 	#if defined(MEMTRACK)
 		print_heap_usage();
 	#endif
+	close_if_open(*ip.good_set_stream);
 	free_terminal();
 	reset_cout(ip);
 	return 0;

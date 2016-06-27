@@ -263,8 +263,8 @@
 
 #define NUM_MUTANTS	//to be determined
 
-#define TEST_STEPS 	12	// How many steps do we take data from kfResults.txt (file containing simulation data from Kim and Forger's model) to compare with our own simulation data
-#define KF_FILENAME	"../sim_bf/kfResults.txt"
+#define TEST_STEPS 	105	// How many steps do we take data from kfResults.txt (file containing simulation data from Kim and Forger's model) to compare with our own simulation data
+#define KF_FILENAME	"../sim_bf/kfResults105.txt"
 
 // Macros for commonly used functions small enough to inject directly into the code
 #define INT_STRLEN(x) (log10((x) > 0 ? (x) : 1) + 1)

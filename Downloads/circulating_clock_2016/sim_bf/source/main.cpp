@@ -10,25 +10,17 @@ int main(int argc, char ** argv){
 	// Initialize the program's terminal functionality and input parameters
 	input_params ip;
 	init_terminal();
-	accept_input_params (argc, argv, ip);
-	check_input_params(ip);
 	init_verbosity(ip);
+	accept_input_params(argc, argv, ip);
 	
-	// declare input_data objects based on users' input about input file names. The buffer of these objects is empty now, and will be filled in right after this declaration section
-	input_data params_data(ip.params_file);
-	input_data ranges_data(ip.ranges_file);
-	input_data perturb_data(ip.perturb_file);
-	cout << "before putting in paramemters"<< endl;
 	//Translate program's input to the program's structures
+	ip.pseed = generate_seed();
 	parameters pr(ip.num_sets);
-	read_sim_params(ip, params_data, pr, ranges_data);
-	cout << "after putting in paramemters"<< endl;
+	generate_random_parameters(ip,pr);
+	
 	// Initialize simulation data, rates (and their perturbations and gradients), and mutant data
 	sim_data sd(ip);
 	rates* rs = new rates();
-	if (ip.read_perturb){
-		fill_perturbations(*rs, perturb_data.buffer);
-	}
 	
 	//create the specified output files
 	ofstream* file_passed = create_passed_file(ip);
@@ -39,8 +31,8 @@ int main(int argc, char ** argv){
 	
 	////////////////////////////////////
 	
-	rs->clear();
-	delete_file(file_passed);
+	//rs->clear();
+	//delete_file(file_passed);
 	#if defined(MEMTRACK)
 		print_heap_usage();
 	#endif
@@ -76,6 +68,8 @@ void usage (const char* message) {
 	cout << "-M, --mutants            [int]        : the number of mutants to run for each parameter set, min=1, default= 1" << endl;
 	cout << "-I, --pipe-in            [file desc.] : the file descriptor to pipe data from (usually passed by the sampler), default=none" << endl;
 	cout << "-O, --pipe-out           [file desc.] : the file descriptor to pipe data into (usually passed by the sampler), default=none" << endl;
+	cout << "-u, --upper-bound        [int]		   : the upperbounds of the parameters, default=1000" << endl;
+	cout << "-u, --lower-bound        [int] 	   : the lowerbounds of the parameters, default=0" << endl;
 	cout << "-c, --no-color           [N/A]        : disable coloring the terminal output, default=unused" << endl;
 	cout << "-v, --verbose            [N/A]        : print detailed messages about the program and simulation state, default=unused" << endl;
 	cout << "-q, --quiet              [N/A]        : hide the terminal output, default=unused" << endl;

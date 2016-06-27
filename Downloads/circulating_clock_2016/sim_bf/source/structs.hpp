@@ -91,12 +91,6 @@ struct terminal {
 
 struct input_params {
 	// Input and output files' paths and names (either absolute or relative)
-	char* params_file; // The path and name of the parameter sets file, default=input.params
-	bool read_params; // Whether or not the read the parameter sets file, default=false
-	char* ranges_file; // The path and name of the parameter ranges file, default=none
-	bool read_ranges; // Whether or not to read the ranges file, default=false
-	char* perturb_file; // The path and name of the perturbations file, default=none
-	bool read_perturb; // Whether or not to read the perturbations file, default=false
 	char* passed_file; // The path and name of the passed file, default=output.passed
 	bool print_passed; // Whether or not to print the passed file, default=false
 	char* dir_path; // The path of the output directory for concentrations or oscillation features, default=none
@@ -137,18 +131,16 @@ struct input_params {
 	bool quiet; // Whether or not the program is quiet, i.e. redirects cout to /dev/null, default=false
 	streambuf* cout_orig; // cout's original buffer to be restored at program completion
 	ofstream* null_stream; // A stream to /dev/null that cout is redirected to if quiet mode is set
-
+	
+	//bounds of parameters
+	int lb;
+	int ub;
 	
 	input_params () {
 		//input and output files
-		this->params_file = new char[30];
-		this->read_params = false;
-		this->ranges_file = new char [30];
-		this->read_ranges = false;
-		this->perturb_file = new char [30];
-		this->read_perturb = false;
-		this->passed_file = new char [30];
-		this->print_passed = false;
+		this->passed_file = new char[30]; // The path and name of the passed file, default=output.passed
+		strcpy(this->passed_file, "passed.txt");
+		this->print_passed = true; // Whether or not to print the passed file, default=false
 		this->dir_path = new char [30];
 		this->print_cons = false;
 		this->binary_cons_output = false;
@@ -156,9 +148,9 @@ struct input_params {
 		this->print_features = false;
 		
 		//timing
-		this->num_sets = 1;
+		this->num_sets = 100000;
 		this->step_size = 0.01;
-		this->time_total = 200;
+		this->time_total = 100;
 		this->big_gran = 1;
 		
 		//seeds
@@ -184,10 +176,13 @@ struct input_params {
 		this->cout_orig = NULL;
 		this->null_stream = new ofstream("/dev/null");
 		
+		//bounds
+		this->lb = 0;
+		this->ub = 1000;
 	}
 	
 	~input_params () {
-		delete [] this->params_file;
+		//delete [] this->params_file;
 		delete [] this->passed_file;
 		delete [] this->dir_path;
 		delete [] this->features_file;

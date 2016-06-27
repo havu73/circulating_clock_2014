@@ -222,11 +222,6 @@ void init_sim_args (input_params& ip) {
 	
 	// Initialize the implicit arguments
 	ip.sim_args[0] = copy_str("simulation");
-	ip.sim_args[ip.num_sim_args - 7] = copy_str("--parameter-sets");
-	char buf[20];
-	sprintf(buf, "%d", ip.num_sets);
-	cout << buf<< endl;
-	ip.sim_args[ip.num_sim_args - 6] = copy_str(buf);
 	ip.sim_args[ip.num_sim_args - 5] = copy_str("--pipe-in");
 	ip.sim_args[ip.num_sim_args - 4] = copy_str("0");
 	ip.sim_args[ip.num_sim_args - 3] = copy_str("--pipe-out");
@@ -284,12 +279,18 @@ void reset_cout (input_params& ip) {
 void generate_parameters(parameters& pr){
 	for (int i = 0; i < pr.num_sets; i ++){
 		for (int j = 0; j < DIM; j ++){
-			pr.data[i][j] = (double)(rand() % 1000);
+			pr.data[i][j] = random_parameters(0, 1000);
 		}
 	}
 }
 
 double random_parameters(int min, int max){
-	double f = (double) rand()/RAND_MAX;
+	double f = (double) rand()/(double)(RAND_MAX);
 	return min + f * (max - min);
+}
+
+void create_good_set_file(){
+	if (ip.print_good_sets){
+		open_file(ip.good_set_stream, ip.good_sets_file, false);
+	}
 }

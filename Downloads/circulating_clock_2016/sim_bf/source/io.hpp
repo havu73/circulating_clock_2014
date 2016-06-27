@@ -17,4 +17,5 @@ void get_kf_data(con_levels& cl);
 void parse_kf_line(con_levels& , char*, int, int&);
 void write_pipe (double[], input_params&, sim_data&);
 void write_pipe_double (int, double);
+void print_passed_set(ofstream*, rates&);
 #endif

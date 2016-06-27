@@ -54,117 +54,119 @@ void store_filename (char** field, const char* value) {
 */
 void simulate_set (parameters& pr) {
 	ostream& v = term->verbose();
-
-	// Create a pipe
-	int sim_in[2];
-	int sim_out[2]; 
-	v << "  ";
-	v << term->blue << "Creating a pipe " << term->reset << ". . . ";
-	if (pipe(sim_in) == -1 || pipe(sim_out) == -1) {
-		term->failed_pipe_create();
-		exit(EXIT_PIPE_CREATE_ERROR);
-	}
-	v << term->blue << "Done: " << term->reset << "parent_read " << sim_out[0] << " parent_write " << sim_in[1] << " child_write " << sim_out[1] << " child_read "<< sim_in[0] << endl;
-	
-	int parent_read = sim_out[0];
-	int parent_write = sim_in[1];
-	int child_write = sim_out[1];
-	int child_read = sim_in[0];
-	
-	// Copy the user-specified simulation arguments and fill the copy with the pipe's file descriptors
-	char** sim_args = copy_args(ip.sim_args, ip.num_sim_args);
-	store_pipe(sim_args, ip.num_sim_args - 4, child_read);
-	store_pipe(sim_args, ip.num_sim_args - 2, child_write);
-	
-	// Fork the process so the child can run the simulation
-	v << "  ";
-	v << term->blue << "Forking the process " << term->reset << ". . . ";
-	pid_t pid = fork();
-	if (pid == -1) {
-		term->failed_fork();
-		exit(EXIT_FORK_ERROR);
-	}
-	if (pid == 0) { // The child runs the simulation
+	for (int i = 0 ; i < pr.num_sets/NUM_SETS_PER_SIM; i++){
+		// Create a pipe
+		int sim_in[2];
+		int sim_out[2]; 
 		v << "  ";
-		v << term->blue << "Checking that the simulation file exists and can be executed " << term->reset << ". . . ";
-		if (access(ip.sim_file, X_OK) == -1) {
-			term->failed_exec();
-			exit(EXIT_EXEC_ERROR);
+		v << term->blue << "Creating a pipe " << term->reset << ". . . ";
+		if (pipe(sim_in) == -1 || pipe(sim_out) == -1) {
+			term->failed_pipe_create();
+			exit(EXIT_PIPE_CREATE_ERROR);
+		}
+		v << term->blue << "Done: " << term->reset << "parent_read " << sim_out[0] << " parent_write " << sim_in[1] << " child_write " << sim_out[1] << " child_read "<< sim_in[0] << endl;
+		
+		int parent_read = sim_out[0];
+		int parent_write = sim_in[1];
+		int child_write = sim_out[1];
+		int child_read = sim_in[0];
+		
+		cout << ip.sim_args[0] << ip.sim_args[1] << ip.sim_args[2]<< endl;
+		// Copy the user-specified simulation arguments and fill the copy with the pipe's file descriptors
+		char** sim_args = copy_args(ip.sim_args, ip.num_sim_args);
+		cout << "after storing pipe"<< endl;
+		store_pipe(sim_args, ip.num_sim_args - 4, child_read);
+		store_pipe(sim_args, ip.num_sim_args - 2, child_write);
+		
+		// Fork the process so the child can run the simulation
+		v << "  ";
+		v << term->blue << "Forking the process " << term->reset << ". . . ";
+		pid_t pid = fork();
+		if (pid == -1) {
+			term->failed_fork();
+			exit(EXIT_FORK_ERROR);
+		}
+		if (pid == 0) { // The child runs the simulation
+			v << "  ";
+			v << term->blue << "Checking that the simulation file exists and can be executed " << term->reset << ". . . ";
+			if (access(ip.sim_file, X_OK) == -1) {
+				term->failed_exec();
+				exit(EXIT_EXEC_ERROR);
+			}
+			term->done(v);
+			if (execv(ip.sim_file, sim_args) == -1) {
+				term->failed_exec();
+				exit(EXIT_EXEC_ERROR);
+			}
+		}
+		else { // The parent pipes in the parameter set to run
+			v << term->blue << "Done: " << term->reset << "the child process's PID is " << pid << endl;
+			v << "  ";
+			v << term->blue << "Writing to the pipe " << term->reset << "(file descriptor " << parent_write << ") . . . ";
+			write_pipe(parent_write, pr, i);
+			term->done(v);
+		}
+		
+		// Wait for the child to finish simulating
+		int status = 0;
+		waitpid(pid, &status, WUNTRACED);
+		if (WIFEXITED(status) == 0) {
+			term->failed_child();
+			exit(EXIT_CHILD_ERROR);
+		}
+		
+		
+		// Pipe in the simulation's score
+		double* score;
+		v << "  ";
+		v << term->blue << "Reading the pipe " << term->reset << "(file descriptor " << parent_read << ") . . . ";
+		read_pipe(parent_read, &score);
+		v << term->blue << "Done: " << term->reset << "(raw score " << score << " / " << 1 << ")" << endl;
+	
+		// CLOSE PIPES
+		v << "  ";
+		v << term->blue << "Closing the the pipes " << term->reset << "(file descriptor " << parent_read << ", "<< parent_write << ", " << child_read << ", " << child_write<< ") . . . ";
+		if (close(parent_read) == -1) {
+			term->failed_pipe_read();
+			exit(EXIT_PIPE_WRITE_ERROR);
+		}
+		
+		if (close(parent_write) == -1) {
+			term->failed_pipe_write();
+			exit(EXIT_PIPE_WRITE_ERROR);
+		}
+	
+		if (close(child_read) == -1) {
+			term->failed_pipe_write();
+			exit(EXIT_PIPE_WRITE_ERROR);
+		}
+		
+		if (close(child_write) == -1) {
+			term->failed_pipe_write();
+			exit(EXIT_PIPE_WRITE_ERROR);
 		}
 		term->done(v);
-		if (execv(ip.sim_file, sim_args) == -1) {
-			term->failed_exec();
-			exit(EXIT_EXEC_ERROR);
+		
+		print_good_set(pr, &score, i);
+		
+		// Free the simulation arguments
+		for (int i = 0; sim_args[i] != NULL; i++) {
+			mfree(sim_args[i]);
 		}
+		mfree(sim_args);
 	}
-	else { // The parent pipes in the parameter set to run
-		v << term->blue << "Done: " << term->reset << "the child process's PID is " << pid << endl;
-		v << "  ";
-		v << term->blue << "Writing to the pipe " << term->reset << "(file descriptor " << parent_write << ") . . . ";
-		write_pipe(parent_write, pr);
-		term->done(v);
-	}
-	
-	// Wait for the child to finish simulating
-	int status = 0;
-	waitpid(pid, &status, WUNTRACED);
-	if (WIFEXITED(status) == 0) {
-		term->failed_child();
-		exit(EXIT_CHILD_ERROR);
-	}
-	
-	
-	// Pipe in the simulation's score
-	double* score;
-	v << "  ";
-	v << term->blue << "Reading the pipe " << term->reset << "(file descriptor " << parent_read << ") . . . ";
-	read_pipe(parent_read, &score);
-	v << term->blue << "Done: " << term->reset << "(raw score " << score << " / " << 1 << ")" << endl;
-
-	// CLOSE PIPES
-	v << "  ";
-	v << term->blue << "Closing the the pipes " << term->reset << "(file descriptor " << parent_read << ", "<< parent_write << ", " << child_read << ", " << child_write<< ") . . . ";
-	if (close(parent_read) == -1) {
-		term->failed_pipe_read();
-		exit(EXIT_PIPE_WRITE_ERROR);
-	}
-	
-	if (close(parent_write) == -1) {
-		term->failed_pipe_write();
-		exit(EXIT_PIPE_WRITE_ERROR);
-	}
-
-	if (close(child_read) == -1) {
-		term->failed_pipe_write();
-		exit(EXIT_PIPE_WRITE_ERROR);
-	}
-	
-	if (close(child_write) == -1) {
-		term->failed_pipe_write();
-		exit(EXIT_PIPE_WRITE_ERROR);
-	}
-	term->done(v);
-	
-	print_good_set(pr, &score);
-	// Free the simulation arguments
-	for (int i = 0; sim_args[i] != NULL; i++) {
-		mfree(sim_args[i]);
-	}
-	mfree(sim_args);
 }
 
-void print_good_set (parameters& pr, double** score) {
-	ofstream passed_file ;
-	open_file(&passed_file, ip.good_sets_file, false);
-	for (int i = 0; i < ip.num_sets; i ++){
-		if (*score[i] != 0){
-			for (int j = 0; j < DIM; j ++){
-				passed_file.write((char *)(&(pr.data[i][j])), sizeof(double));
+void print_good_set (parameters& pr, double** score, int i) {
+	for (int j = 0; j < NUM_SETS_PER_SIM; i ++){
+		if (*score[j] != 0){
+			for (int k = 0; k < DIM; k ++){
+				ip.good_set_stream->write((char *)(&(pr.data[i*NUM_SETS_PER_SIM + j][j])), sizeof(double));
 			}
-			passed_file << "\n";
+			//ip->good_set_stream "\n" ;
 		}
 	}
-	close_if_open(passed_file);
+	//close_if_open(passed_file);
 }
 
 
@@ -176,10 +178,11 @@ void print_good_set (parameters& pr, double** score) {
 	notes:
 	todo:
 */
-void write_pipe (int fd, parameters& pr) {
+void write_pipe (int fd, parameters& pr, int i) {
 	write_pipe_int(fd, DIM); // Write the number of dimensions, i.e. parameters per set, being sent
-	for (int i = 0; i < ip.num_sets; i ++){
-		if (write(fd, pr.data[i], sizeof(double) * DIM) == -1) {
+	write_pipe_int(fd, NUM_SETS_PER_SIM);
+	for (int j = 0 ; j < NUM_SETS_PER_SIM; j ++){
+		if (write(fd, pr.data[i * NUM_SETS_PER_SIM  + j], sizeof(double) * DIM) == -1) {
 			term->failed_pipe_write();
 			exit(EXIT_PIPE_WRITE_ERROR);
 		}

@@ -28,12 +28,12 @@ io.hpp contains function declarations for io.cpp.
 void store_filename(char**, const char*);
 void simulate_set(parameters&);
 //void print_good_set (double parameters[], double score, input_params&);
-void write_pipe (int fd, parameters& pr);
+void write_pipe (int fd, parameters& pr, int);
 void write_pipe_int(int, int);
 void read_pipe(int, double**);
 void read_pipe_int(int, double*);
 void close_if_open(ofstream&);
 void open_file (ofstream*, char* , bool);
-void print_good_set (parameters& , double**);
+void print_good_set (parameters&, double**, int);
 #endif
 

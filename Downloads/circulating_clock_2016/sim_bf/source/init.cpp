@@ -27,8 +27,6 @@ void ensure_nonempty (const char* option, const char* arg) {
 void accept_input_params (int num_args, char** args, input_params& ip) {
 	string o;
 	string v;
-
-	if (num_args >1){
 		for (int i = 1; i < num_args; i += 2){
 			//Process option and values 
 			o = args[i];
@@ -48,19 +46,7 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 			}
 			
 			// Accept command-line arguments in both short and long form
-			if (option_set(option, "-i", "--params-file")) {
-				ensure_nonempty(option, value);
-				store_filename(&(ip.params_file), value);
-				ip.read_params = true;
-			}else if (option_set(option, "-R", "--ranges-file")) {
-				ensure_nonempty(option, value);
-				store_filename(&(ip.ranges_file), value);
-				ip.read_ranges = true;
-			} else if (option_set(option, "-u", "--perturb-file")) {
-				ensure_nonempty(option, value);
-				store_filename(&(ip.perturb_file), value);
-				ip.read_perturb = true;
-			}else if (option_set(option, "-o", "--print-passed")) {
+			if (option_set(option, "-o", "--print-passed")) {
 				ensure_nonempty(option, value);
 				store_filename(&(ip.passed_file), value);
 				ip.print_passed = true;
@@ -148,7 +134,13 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 					ip.verbose = true;
 				}
 				i--;
-			} else if (option_set(option, "-q", "--quiet")) {
+			}else if (option_set(option, "-u" , "--uper-bound")){
+				ensure_nonempty(option, value);	
+				ip.ub = atoi(value);
+			}else if (option_set(option, "-b" , "--lower-bound")){
+				ensure_nonempty(option, value);	
+				ip.lb = atoi(value);
+			}else if (option_set(option, "-q", "--quiet")) {
 				if (!ip.quiet) {
 					ip.quiet = true;
 					ip.cout_orig = cout.rdbuf();
@@ -172,9 +164,6 @@ void accept_input_params (int num_args, char** args, input_params& ip) {
 			delete [] option;
 			delete [] value;
 		}
-	} else {
-		usage("Please provide parameters to the program");
-	}
 }
 
 void init_verbosity (input_params& ip) {
@@ -182,7 +171,7 @@ void init_verbosity (input_params& ip) {
 		term->set_verbose_streambuf(ip.null_stream->rdbuf());
 	}
 }
-
+/*
 void check_input_params (input_params& ip){
 	if (ip.piping && (ip.pipe_in == 0 || ip.pipe_out == 0)) {
 		usage("If one end of a pipe is specified, the other must be as well. Set the file descriptors for both the pipe in (-I or --pipe-in) and the pipe out (-O or --pipe-out).");
@@ -197,7 +186,7 @@ void check_input_params (input_params& ip){
 		init_seeds(ip, 0, false, false);
 	}
 }
-
+*/
 void init_seeds (input_params& ip, int set_num, bool append, bool indent_message) {
 	// If the file is being created then generate the parameter set seed
 	if (!append && ip.store_pseed) {
@@ -228,7 +217,7 @@ void init_seeds (input_params& ip, int set_num, bool append, bool indent_message
 		seed_file << "seed " << set_num << ": " << ip.seed << endl;
 	}
 }
-
+/*
 void read_sim_params (input_params& ip, input_data& params_data, parameters& pr, input_data& ranges_data) {
 	cout << term->blue;
 	if (ip.piping) { // If the user specified piping
@@ -264,6 +253,7 @@ void read_sim_params (input_params& ip, input_data& params_data, parameters& pr,
 		usage("Parameter must be piped in via -I or --pipe-in, read from a file via -i or --params-file, or generated from a ranges file and number of sets via -R or --ranges-file and -p or --parameter-sets, respectively.");
 	} 
 }
+*/
 
 /* random_double generates a random double in the range specified by the given pair of doubles
 	parameters:
@@ -272,8 +262,8 @@ void read_sim_params (input_params& ip, input_data& params_data, parameters& pr,
 	notes:
 	todo:
 */
-double random_double (pair<double, double> range) {
-	return range.first + (range.second - range.first) * rand() / (RAND_MAX + 1.0);
+double random_double (double first, double second) {
+	return first + (second - first) * rand() / (RAND_MAX + 1.0);
 }
 
 
@@ -579,4 +569,13 @@ void update_initial_conditions(con_levels& cl){
 	cl.data[X62300][0] = 0.00797183;
 	cl.data[X62310][0] = 6.35261e-05;
 	cl.data[X62311][0] = 0.0440794;
+}
+
+void generate_random_parameters(input_params& ip, parameters& pr){
+	srand(ip.pseed);
+	for (int i = 0; i < ip.num_sets; i++) {
+		for (int j = 0; j < NUM_RATES; j++) {
+			pr.data[i][j] = random_double((double)ip.lb, (double)ip.ub);
+		}
+	}
 }

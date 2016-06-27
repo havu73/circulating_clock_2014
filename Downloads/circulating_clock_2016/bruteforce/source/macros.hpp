@@ -28,7 +28,7 @@ macros.hpp contains every constant and macro function used in the program.
 
 // Number of random numbers to generate per parameter sets
 #define DIM 					14
-
+#define NUM_SETS_PER_SIM		1000
 
 // Exit statuses
 #define EXIT_SUCCESS			0

@@ -20,10 +20,16 @@ void simulate_all_params(input_params& ip, rates& rs, sim_data& sd, parameters& 
 	double score[ip.num_sets];
 	for (int i = 0; i < ip.num_sets; i++){
 		memcpy(rs.rates_base, pr.data[i], sizeof(double) * NUM_RATES);
-		cout << rs.rates_base[0];
+		cout << rs.rates_base[0]<< endl;
 		score[i] = simulate_param_set(i, ip, sd, rs, cl, kf_cl);
+		if (score[i] > 0.5 ){
+			cout << "difference: " << 1/score[i] << endl; 
+			test_rates(rs);
+			print_passed_set(file_passed, rs);
+		}
 	}
 	
+	close_if_open(file_passed);
 	// Pipe the scores if piping specified by the user
 	if (ip.piping) {
 		write_pipe(score, ip, sd);
@@ -35,7 +41,7 @@ void simulate_all_params(input_params& ip, rates& rs, sim_data& sd, parameters& 
  * 	3, calculate the concentrations of different species over time. If any negative number of nan: set fails the validity test
  * 	4, 
  */
-double simulate_param_set(int set_num, input_params& ip, sim_data& sd, rates& rs, con_levels& cl, con_levels& kf_cl){
+double simulate_param_set(int set_num, input_params& ip, sim_data& sd, rates& rs, con_levels& cl, con_levels & kf_cl){
 	cout << term->blue << "Simulating set " << term->reset << set_num << " . . ." << endl;
 	
 	double score = 0;
@@ -50,7 +56,6 @@ double simulate_param_set(int set_num, input_params& ip, sim_data& sd, rates& rs
 	bool valid = calculate_concentrations(ip, cl, rs, sd);
 	
 	if (valid){
-		print_concentrations(ip, sd, cl, set_num);
 		double inverse_score = cost(cl, kf_cl);
 		if (inverse_score == 0){
 			score = 1;
@@ -59,7 +64,7 @@ double simulate_param_set(int set_num, input_params& ip, sim_data& sd, rates& rs
 		}
 	}
 	else{
-		cout << term->blue << "Set " << term->reset << set_num << term->blue << " failed because concentrations may be negative or nan ..." << endl;
+		cout << term->blue << "Set " << term->reset << set_num << term->blue << " failed because concentrations is nan ..." << endl;
 	}
 	return score;
 }
@@ -613,7 +618,7 @@ bool calculate_concentrations(input_params& ip, con_levels& cl, rates& rs, sim_d
 				findX62311(sim_rates, cl, j, sd.step_size);
 			}
 			
-			if (cl.data[i][j] < 0 || isnan(cl.data[i][j])|| cl.data[i][j] > 2000){
+			if (isnan(cl.data[i][j])){
 				valid = false;
 				break;
 			}	 

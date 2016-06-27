@@ -291,6 +291,7 @@ void get_kf_data(con_levels& kf_cl){
 	for (int i = 0; i < TEST_STEPS; i++){
 		if (kf_data.index < kf_data.size){
 			parse_kf_line(kf_cl, kf_data.buffer, i, kf_data.index);
+			cout << "in get_kf_data: " << kf_cl.data[0][i]<< endl;
 		}
 	}
 }
@@ -366,5 +367,15 @@ void write_pipe_double (int fd, double value) {
 	if (write(fd, &value, sizeof(double)) == -1) {
 		term->failed_pipe_write();
 		exit(EXIT_PIPE_WRITE_ERROR);
+	}
+}
+
+void print_passed_set(ofstream* passed_file, rates& rs){
+	for (int j = 0; j < NUM_RATES; j++) {
+		if (j < NUM_RATES - 1){ 
+			*passed_file <<rs.rates_base[j] << ",";
+		}else{
+			*passed_file << rs.rates_base[j] << "\n";
+		}
 	}
 }

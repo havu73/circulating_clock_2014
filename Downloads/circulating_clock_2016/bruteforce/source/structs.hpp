@@ -162,6 +162,7 @@ struct input_params {
 	
 	char* good_sets_file;
 	bool print_good_sets;
+	ofstream* good_set_stream;
 	int num_sets;
 	// Simulation parameters
 	char** sim_args; // Arguments to be passed to the simulation
@@ -175,7 +176,7 @@ struct input_params {
 	int seed; // The seed used in the evolutionary strategy, default=current UNIX time
 	
 	input_params () {
-		this->sim_file = copy_str("../sim_bf/simulation");
+		this->sim_file = copy_str("../simulation/simulation");
 		this->seed = time(0);
 		this->print_good_sets = true;
 		this->sim_args = NULL;
@@ -185,7 +186,8 @@ struct input_params {
 		this->cout_orig = NULL;
 		this->null_stream = new ofstream("/dev/null");
 		this->num_sets = 10000;
-		this->good_sets_file = NULL;
+		this->good_sets_file = copy_str("set.txt");
+		this->good_set_stream = new ofstream();
 	}
 	
 	~input_params () {
